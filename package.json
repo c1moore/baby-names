@@ -1,0 +1,29 @@
+{
+  "name": "baby-names",
+  "version": "1.0.0",
+  "description": "Website for collecting baby names.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/c1moore/baby-names.git"
+  },
+  "author": "Calvin Moore <c1moore@outlook.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/c1moore/baby-names/issues"
+  },
+  "homepage": "https://github.com/c1moore/baby-names#readme",
+  "dependencies": {
+    "aws-sdk": "^2.463.0",
+    "axios": "^0.18.0",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "@types/node": "^12.0.2",
+    "typescript": "^3.4.5"
+  }
+}
