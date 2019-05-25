@@ -4,7 +4,7 @@ AWS.config.update({
   region: process.env.AWS_REGION,
 });
 
-exports.fetchGuessesByUser = async ({ pathParameters = {} }: { pathParameters: { guessor?: string } }, _context: any, callback: (Error, any) => void) => {
+exports.fetchGuessesByUser = async ({ pathParameters = {} }: { pathParameters: { guessor?: string } }, _context: any, callback: (Error, any) => void): Promise<void> => {
   try {
     const guessor = decodeURIComponent(pathParameters.guessor);
     const docClient = new AWS.DynamoDB.DocumentClient();
@@ -29,7 +29,7 @@ exports.fetchGuessesByUser = async ({ pathParameters = {} }: { pathParameters: {
       headers:    {
         'Content-Type': 'application/json',
       },
-      body:       JSON.stringify(guessorDoc.Item.guesses),
+      body:       JSON.stringify(guessorDoc.Item.Guesses),
     });
   } catch (err) {
     callback(null, {

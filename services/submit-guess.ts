@@ -32,7 +32,7 @@ async function loadRecaptchaSecret(): Promise<string> {
   }).promise()).Parameter.Value;
 }
 
-exports.submitGuess = async ({ body = '' }: { body: string }, _context, callback) => {
+exports.submitGuess = async ({ body = '' }: { body: string }, _context: any, callback: (Error, any) => void): Promise<void> => {
   try {
     let recaptchaToken: string;
     let guessor: string;
@@ -80,7 +80,7 @@ exports.submitGuess = async ({ body = '' }: { body: string }, _context, callback
       Key:                        {
         Guessor:                    guessor,
       },
-      UpdateExpression:           'ADD guesses :guesses',
+      UpdateExpression:           'ADD Guesses :guesses',
       ExpressionAttributeValues:  {
         ':guesses':                 docClient.createSet(guesses),
       },
