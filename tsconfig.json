@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./build/services",
+    "sourceMap": false,
+    "moduleResolution": "node",
+    "target": "es6"
+  },
+  "include": [
+    "services/**.ts"
+  ]
+}
