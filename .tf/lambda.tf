@@ -8,9 +8,9 @@ resource "aws_lambda_function" "submit-name" {
   handler   = "exports.submitName"
   role      = "${aws_iam_role.dynamo-write-role.arn}"
 
-  depends_on = "${aws_s3_bucket_object.submit-name}"
+  depends_on = [aws_s3_bucket_object.submit-name]
 
-  tags {
+  tags = {
     Name        = "submit-name"
     Project     = "BabyNames"
     Environment = "production"
@@ -37,9 +37,9 @@ resource "aws_lambda_function" "fetch-guesses" {
   handler   = "exports.calculateResults"
   role      = "${aws_iam_role.dynamo-read-role.arn}"
 
-  depends_on = "${aws_s3_bucket_object.fetch-guesses}"
+  depends_on = [aws_s3_bucket_object.fetch-guesses]
 
-  tags {
+  tags = {
     Name        = "fetch-guesses"
     Project     = "BabyNames"
     Environment = "production"
@@ -66,9 +66,9 @@ resource "aws_lambda_function" "fetch-user-guesses" {
   handler   = "exports.fetchGuessesByUser"
   role      = "${aws_iam_role.dynamo-read-role.arn}"
 
-  depends_on = "${aws_s3_bucket_object.fetch-user-guesses}"
+  depends_on = [aws_s3_bucket_object.fetch-user-guesses]
 
-  tags {
+  tags = {
     Name        = "fetch-user-guesses"
     Project     = "BabyNames"
     Environment = "production"

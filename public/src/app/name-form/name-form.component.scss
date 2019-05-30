@@ -1,0 +1,26 @@
+.guess-form {
+  h2 {
+    text-align: center;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .prompt {
+    margin-bottom: 25px;
+  }
+
+  .submit {
+    margin-top: 20px;
+  }
+
+  .recaptcha {
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+}
+
+.no-min-width {
+  min-width: unset;
+}

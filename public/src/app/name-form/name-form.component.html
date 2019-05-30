@@ -1,0 +1,50 @@
+<ng-form name="guessForm" class="guess-form" #guessForm="ngForm">
+  <div class="container">
+    <div class="row justify-content-center" *ngIf="showGuessorNameInput">
+      <h2 class="col-12 prompt">What's your name?</h2>
+  
+      <mat-form-field class="col-12 col-sm-10 col-lg-8 col-xl-6">
+        <mat-label>Name</mat-label>
+        <input matInput name="guessor" placeholder="First Last" [(ngModel)]="guessor" #guessorModel="ngModel" minlength="4" pattern="[A-Z][A-Za-z']+ [A-Z][A-Za-z]+" required />
+        <mat-error *ngIf="guessorModel.invalid">Enter your first and last name.</mat-error>
+      </mat-form-field>
+
+      <div class="w-100"></div>
+  
+      <div class="col-12 col-sm-10 col-lg-8 col-xl-6">
+        <button mat-flat-button class="submit" color="primary" (click)="saveName()" [disabled]="guessorModel.invalid || !guessorModel.dirty">Next</button>
+      </div>
+    </div>
+    
+    <div class="row justify-content-center" *ngIf="!showGuessorNameInput">
+      <h2 class="col-12 prompt">What do you think the baby's name will be?</h2>
+  
+      <mat-form-field *ngFor="let guess of guesses; let i = index" class="col-12 col-sm-10 col-lg-8 col-xl-6">
+        <button mat-button matPrefix class="px-1 no-min-width" (click)="addGuess()">
+            <i class="material-icons">
+              add
+            </i>
+        </button>
+  
+        <button mat-button matPrefix class="px-1 mr-3 no-min-width" (click)="removeGuess(i)">
+          <i class="material-icons">
+            close
+          </i>
+        </button>
+
+        <mat-label>Guess {{i + 1}}</mat-label>
+        <input matInput name="guess-{{i}}" placeholder="{{placeholders[i % placeholders.length]}}" minlength="2" [(ngModel)]="guess.name" />
+      </mat-form-field>
+
+      <div class="w-100"></div>
+
+      <ngx-recaptcha2 #recaptcha name="recaptcha" class="col-12 col-sm-10 col-lg-8 col-xl-6 recaptcha" [siteKey]="'6Le4yqUUAAAAAJrC8XcfR7VVSjXETIMU9UnaUAa2'" [(ngModel)]="recaptchaToken" required></ngx-recaptcha2>
+
+      <div class="w-100"></div>
+  
+      <div class="col-12 col-sm-10 col-lg-8 col-xl-6">
+        <button mat-flat-button class="submit" color="primary" (click)="submitGuesses()" [disabled]="guessForm.invalid">Submit</button>
+      </div>
+    </div>
+  </div>
+</ng-form>

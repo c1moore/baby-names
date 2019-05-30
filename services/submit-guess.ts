@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+import * as AWS from 'aws-sdk';
 import axios, { AxiosResponse } from 'axios';
 
 AWS.config.update({
@@ -27,7 +27,7 @@ async function loadRecaptchaSecret(): Promise<string> {
   const ssm = new AWS.SSM();
 
   return (await ssm.getParameter({
-    Name:           `BabyNames/${process.env.NODE_ENV}/RECAPTCHA_SECRET`,
+    Name:           `/BabyNames/${process.env.NODE_ENV}/RECAPTCHA_SECRET`,
     WithDecryption: true,
   }).promise()).Parameter.Value;
 }

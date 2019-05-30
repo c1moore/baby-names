@@ -1,0 +1,21 @@
+<div class="name-medallion">
+  <h1 class="initials">KM</h1>
+
+  <div class="circle">
+    <div class="semicircle left"></div>
+    <div class="semicircle right"></div>
+  </div>
+</div>
+
+<div class="navbar justify-content-center" [ngClass]="{'extended-margin': displayPage === Pages.FORM}">
+  <button mat-button class="mr-5" (click)="onClickRulesLink()">Rules</button>
+  <button mat-button (click)="onClickFAQLink()">FAQ</button>
+</div>
+
+<app-name-form [hidden]="displayPage !== Pages.FORM"></app-name-form>
+
+<app-rules *ngIf="displayPage === Pages.RULES" (close)="closePage()"></app-rules>
+
+<app-faq *ngIf="displayPage === Pages.FAQ" (close)="closePage()"></app-faq>
+
+<router-outlet></router-outlet>

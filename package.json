@@ -4,7 +4,14 @@
   "description": "Website for collecting baby names.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -rf ./build",
+    "build-ng": "cd public; ng build --prod; cd ..; mkdir -p ./build/public; cp -a ./public/dist/baby-names/. ./build/public",
+    "build-ts": "tsc; cp -R ./node_modules ./build/services; cd ./build/services ; zip -qr list-guesses.zip list-guesses.js node_modules; zip -qr list-user-guesses.zip list-user-guesses.js node_modules; zip -qr submit-guess.zip submit-guess.js node_modules",
+    "build": "npm run build-ng && npm run build-ts",
+    "tf-fmt": "cd .tf; terraform fmt; cd ..",
+    "plan": "cd .tf; terraform init; terraform plan; cd ..",
+    "deploy": "npm run build && cd ./tf && terraform apply && cd .."
   },
   "repository": {
     "type": "git",

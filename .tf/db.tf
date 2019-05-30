@@ -14,13 +14,7 @@ resource "aws_dynamodb_table" "db" {
     enabled        = false
   }
 
-  timeouts {
-    create = 1
-    update = 1
-    delete = 1
-  }
-
-  tags {
+  tags = {
     Name        = "babynames-db"
     Project     = "BabyNames"
     Environment = "production"

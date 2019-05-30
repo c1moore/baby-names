@@ -1,0 +1,16 @@
+<div class="container">
+    <div class="row">
+      <div class="col text-right mb-3">
+        <button mat-button (click)="onClose()">
+          <i class="material-icons">close</i>
+        </button>
+      </div>
+    </div>
+  
+    <div class="row">
+      <div class="col-12 faq" *ngFor="let faq of faqs">
+        <h6 class="question">{{faq.question}}</h6>
+        <p class="answer alert alert-light">{{faq.answer}}</p>
+      </div>
+    </div>
+  </div>
