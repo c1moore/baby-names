@@ -32,6 +32,27 @@ async function loadRecaptchaSecret(): Promise<string> {
   }).promise()).Parameter.Value;
 }
 
+async function addGuess(docClient: AWS.DynamoDB.DocumentClient, guess: string, guessor: string): Promise<void> {
+  try {
+    return await docClient.update({
+      TableName:                  process.env.DYNAMO_TABLE_NAME,
+      Key:                        {
+        Guess:                      guess,
+      },
+      ConditionExpression:        'not contains (Guessors, :guessor)',
+      UpdateExpression:           'SET Guessors = list_append (Guessors, :guessor)',
+      ExpressionAttributeValues:  {
+        ':guessor':                 guessor,
+      },
+      ReturnValues:               'NONE',
+    }).promise().then();
+  } catch (err) {
+    if (err.code !== 'ConditionalCheckFailedException') {
+      throw err;
+    }
+  }
+};
+
 exports.submitGuess = async ({ body = '' }: { body: string }, _context: any, callback: (Error, any) => void): Promise<void> => {
   try {
     let recaptchaToken: string;
@@ -75,17 +96,18 @@ exports.submitGuess = async ({ body = '' }: { body: string }, _context: any, cal
     // ReCAPTCHA was successful.  Add the answer.
     const docClient = new AWS.DynamoDB.DocumentClient();
 
-    await docClient.update({
-      TableName:                  process.env.DYNAMO_TABLE_NAME,
-      Key:                        {
-        Guessor:                    guessor,
-      },
-      UpdateExpression:           'ADD Guesses :guesses',
-      ExpressionAttributeValues:  {
-        ':guesses':                 docClient.createSet(guesses),
-      },
-      ReturnValues:               'NONE',
-    }).promise();
+    // Make sure there aren't any duplicate names since I pay per name.
+    guesses = Array.from(new Set(guesses));
+
+    try {
+      await Promise.all(guesses.map((guess) => {
+        return addGuess(docClient, guess, guessor);
+      }));
+    } catch (err) {
+      if (err.code !== 'ConditionalCheckFailedException') {
+        throw err;
+      }
+    }
 
     callback(null, {
       statusCode: 204,

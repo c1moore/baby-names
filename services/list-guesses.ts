@@ -8,28 +8,16 @@ exports.calculateResults = async (_event: any, _context: any, callback: (Error, 
   try {
     const docClient = new AWS.DynamoDB.DocumentClient();
 
-    const docs: ({ Guessor: string, Guesses: string[] })[] = (await docClient.scan({
+    const docs: ({ Guess: string, Guessors: string[] })[] = (await docClient.scan({
       TableName:  process.env.DYNAMO_TABLE_NAME,
-    }).promise()).Items as ({ Guessor: string, Guesses: string[] })[];
-
-    const results: { [guess: string]: string[] } = {};
-
-    docs.forEach((doc: { Guessor: string, Guesses: string[] }): void => {
-      doc.Guesses.forEach((guess: string) => {
-        if (!results[guess]) {
-          results[guess] = [];
-        }
-
-        results[guess].push(doc.Guessor);
-      });
-    });
+    }).promise()).Items as ({ Guess: string, Guessors: string[] })[];
 
     callback(null, {
       statusCode: 200,
       headers:    {
         'Content-Type': 'application/json',
       },
-      body:       JSON.stringify(results),
+      body:       JSON.stringify(docs),
     });
   } catch (err) {
     callback(null, {

@@ -9,27 +9,25 @@ exports.fetchGuessesByUser = async ({ pathParameters = {} }: { pathParameters: {
     const guessor = decodeURIComponent(pathParameters.guessor);
     const docClient = new AWS.DynamoDB.DocumentClient();
 
-    const guessorDoc = (await docClient.get({
-      TableName:  process.env.DYNAMO_TABLE_NAME,
-      Key:        {
-        Guessor:    guessor,
+    const guessesDoc = (await docClient.scan({
+      TableName:                  process.env.DYNAMO_TABLE_NAME,
+      ProjectionExpression:       'Guess',
+      FilterExpression:           'contains (Guessors, :guessor)',
+      ExpressionAttributeValues:  {
+        ':guessor':                 guessor,
       },
     }).promise());
 
-    if (!guessorDoc || !guessorDoc.Item) {
-      callback(null, {
-        statusCode: 404,
-      });
-
-      return;
-    }
+    const guesses = guessesDoc.Items.map((doc: { Guess: string }) => {
+      return doc.Guess;
+    });
 
     callback(null, {
       statusCode: 200,
       headers:    {
         'Content-Type': 'application/json',
       },
-      body:       JSON.stringify(guessorDoc.Item.Guesses),
+      body:       JSON.stringify(guesses),
     });
   } catch (err) {
     callback(null, {
