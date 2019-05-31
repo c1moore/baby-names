@@ -11,7 +11,7 @@
     "build": "npm run build-ng && npm run build-ts",
     "tf-fmt": "cd .tf; terraform fmt; cd ..",
     "plan": "cd .tf; terraform init; terraform plan; cd ..",
-    "deploy": "npm run build && cd ./tf && terraform apply && cd .."
+    "deploy": "cd .tf && terraform apply && cd .."
   },
   "repository": {
     "type": "git",

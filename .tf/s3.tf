@@ -11,7 +11,7 @@ resource "aws_s3_bucket" "website" {
 
   cors_rule {
     allowed_headers = ["*"]
-    allowed_methods = ["*"]
+    allowed_methods = ["GET"]
     allowed_origins = ["*"]
   }
 }
@@ -115,7 +115,7 @@ resource "aws_s3_bucket" "s3-lambdas" {
 }
 
 resource "aws_s3_bucket_object" "submit-name" {
-  bucket = "${aws_s3_bucket.website.id}"
+  bucket = "${aws_s3_bucket.s3-lambdas.id}"
   key    = "submit-guess.zip"
   source = "../build/services/submit-guess.zip"
   etag   = "${filemd5("../build/services/submit-guess.zip")}"
@@ -130,7 +130,7 @@ resource "aws_s3_bucket_object" "submit-name" {
 }
 
 resource "aws_s3_bucket_object" "fetch-guesses" {
-  bucket = "${aws_s3_bucket.website.id}"
+  bucket = "${aws_s3_bucket.s3-lambdas.id}"
   key    = "list-guesses.zip"
   source = "../build/services/list-guesses.zip"
   etag   = "${filemd5("../build/services/list-guesses.zip")}"
@@ -145,7 +145,7 @@ resource "aws_s3_bucket_object" "fetch-guesses" {
 }
 
 resource "aws_s3_bucket_object" "fetch-user-guesses" {
-  bucket = "${aws_s3_bucket.website.id}"
+  bucket = "${aws_s3_bucket.s3-lambdas.id}"
   key    = "list-user-guesses.zip"
   source = "../build/services/list-user-guesses.zip"
   etag   = "${filemd5("../build/services/list-user-guesses.zip")}"

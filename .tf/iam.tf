@@ -44,7 +44,7 @@ resource "aws_iam_role_policy" "dynamo-write-policy" {
 
   policy = <<-EOT
     {
-      "Version":    "2012-10-17"
+      "Version":    "2012-10-17",
       "Statement":  [
         {
           "Effect":   "Allow",
@@ -67,7 +67,7 @@ resource "aws_iam_role_policy" "dynamo-read-policy" {
 
   policy = <<-EOT
     {
-      "Version":    "2012-10-17"
+      "Version":    "2012-10-17",
       "Statement":  [
         {
           "Effect":   "Allow",
@@ -82,4 +82,50 @@ resource "aws_iam_role_policy" "dynamo-read-policy" {
       ]
     }
     EOT
+}
+
+resource "aws_iam_policy" "s3-read-policy" {
+  name        = "s3-policy"
+  description = "Policy for allowing all S3 Actions"
+
+  policy = <<-EOF
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:ListBucket"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
+    EOF
+}
+
+resource "aws_iam_role" "s3-api-gateyway-role" {
+  name = "s3-api-gateyway-role"
+
+  assume_role_policy = <<-EOF
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "apigateway.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    } 
+    EOF
+}
+
+resource "aws_iam_role_policy_attachment" "s3-read-policy" {
+  role       = "${aws_iam_role.s3-api-gateyway-role.name}"
+  policy_arn = "${aws_iam_policy.s3-read-policy.arn}"
 }

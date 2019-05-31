@@ -10,7 +10,7 @@ resource "aws_dynamodb_table" "db" {
   }
 
   ttl {
-    attribute_name = "TTL"
+    attribute_name = ""
     enabled        = false
   }
 
