@@ -253,12 +253,12 @@ resource "aws_api_gateway_integration" "submit-guess-integration" {
   uri                     = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.submit-name.arn}/invocations"
 }
 
-resource "aws_lambda_permission" "apigateway-lambda-permission" {
+resource "aws_lambda_permission" "apigateway-submit-guess-permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.submit-name.function_name}"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.baby-names-api.id}/*/${aws_api_gateway_method.submit-guess-endpoint.http_method}/${aws_api_gateway_resource.api-resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.submit-guess-endpoint.http_method}/${aws_api_gateway_resource.api-resource.path}"
 }
 
 /**
@@ -266,48 +266,48 @@ resource "aws_lambda_permission" "apigateway-lambda-permission" {
  */
 resource "aws_api_gateway_method" "list-guesses-endpoint" {
   rest_api_id   = "${aws_api_gateway_rest_api.baby-names-api.id}"
-  resource_id   = "${aws_api_gateway_resource.list-guesses-resource.id}"
+  resource_id   = "${aws_api_gateway_resource.api-resource.id}"
   http_method   = "GET"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "list-guesses-integration" {
   rest_api_id             = "${aws_api_gateway_rest_api.baby-names-api.id}"
-  resource_id             = "${aws_api_gateway_resource.list-guesses-resource.id}"
+  resource_id             = "${aws_api_gateway_resource.api-resource.id}"
   http_method             = "${aws_api_gateway_method.list-guesses-endpoint.http_method}"
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.submit-name.arn}/invocations"
 }
 
-resource "aws_lambda_permission" "apigateway-lambda-permission" {
+resource "aws_lambda_permission" "apigateway-list-guesses-permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.fetch-guesses.function_name}"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.baby-names-api.id}/*/${aws_api_gateway_method.list-guesses-endpoint.http_method}/${aws_api_gateway_resource.api-resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.list-guesses-endpoint.http_method}/${aws_api_gateway_resource.api-resource.path}"
 }
 
 /**
  * GET /guesses/{guessor}
  */
-resource "aws_api_gateway_resource" "api-resource" {
+resource "aws_api_gateway_resource" "guessor-api-resource" {
   rest_api_id = "${aws_api_gateway_rest_api.baby-names-api.id}"
-  parent_id   = "${aws_api_gateway_resource.api-resource}"
+  parent_id   = "${aws_api_gateway_resource.api-resource.id}"
   path_part   = "{guessor}"
 }
 
-resource "aws_api_gateway_method" "submit-guess-endpoint" {
+resource "aws_api_gateway_method" "list-user-guesses-endpoint" {
   rest_api_id   = "${aws_api_gateway_rest_api.baby-names-api.id}"
-  resource_id   = "${aws_api_gateway_resource.api-resource.id}"
+  resource_id   = "${aws_api_gateway_resource.guessor-api-resource.id}"
   http_method   = "POST"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "submit-guess-integration" {
+resource "aws_api_gateway_integration" "list-user-guesses-integration" {
   rest_api_id             = "${aws_api_gateway_rest_api.baby-names-api.id}"
-  resource_id             = "${aws_api_gateway_resource.api-resource.id}"
-  http_method             = "${aws_api_gateway_method.submit-guess-endpoint.http_method}"
+  resource_id             = "${aws_api_gateway_resource.guessor-api-resource.id}"
+  http_method             = "${aws_api_gateway_method.list-user-guesses-endpoint.http_method}"
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.submit-name.arn}/invocations"
@@ -318,5 +318,5 @@ resource "aws_lambda_permission" "apigateway-lambda-permission" {
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.submit-name.function_name}"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.baby-names-api.id}/*/${aws_api_gateway_method.submit-guess-endpoint.http_method}/${aws_api_gateway_resource.api-resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.list-user-guesses-endpoint.http_method}/${aws_api_gateway_resource.guessor-api-resource.path}"
 }
