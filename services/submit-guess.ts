@@ -39,10 +39,10 @@ async function addGuess(docClient: AWS.DynamoDB.DocumentClient, guess: string, g
       Key:                        {
         Guess:                      guess,
       },
-      ConditionExpression:        'not contains (Guessors, :guessor)',
+      ConditionExpression:        'attribute_exists (Guessors) AND not contains (Guessors, :guessor)',
       UpdateExpression:           'SET Guessors = list_append (Guessors, :guessor)',
       ExpressionAttributeValues:  {
-        ':guessor':                 guessor,
+        ':guessor':                 [ guessor ],
       },
       ReturnValues:               'NONE',
     }).promise().then();
@@ -50,6 +50,19 @@ async function addGuess(docClient: AWS.DynamoDB.DocumentClient, guess: string, g
     if (err.code !== 'ConditionalCheckFailedException') {
       throw err;
     }
+
+    return await docClient.update({
+      TableName:                  process.env.DYNAMO_TABLE_NAME,
+      Key:                        {
+        Guess:                      guess,
+      },
+      ConditionExpression:        'attribute_not_exists (Guessors)',
+      UpdateExpression:           'SET Guessors = :guessor',
+      ExpressionAttributeValues:  {
+        ':guessor':                 [ guessor ],
+      },
+      ReturnValues:               'NONE',
+    }).promise().then();
   }
 };
 
@@ -62,6 +75,8 @@ exports.submitGuess = async ({ body = '' }: { body: string }, _context: any, cal
     try {
       ({ recaptchaToken, guessor, guesses } = parseRequest(body));
     } catch (err) {
+      console.error(err);
+
       callback(null, {
         statusCode: 400,
         headers:    {
@@ -71,22 +86,24 @@ exports.submitGuess = async ({ body = '' }: { body: string }, _context: any, cal
           msg: err.toString(),
         }),
       });
+
+      return;
     }
 
     // Validate ReCAPTCHA
-    const recaptchaRes: AxiosResponse<{success: boolean, challenge_ts: number, hostname: string, 'error-codes': string[]}> = await axios.post('https://www.google.com/recaptcha/api/siteverify', {
-      secret:   await loadRecaptchaSecret(),
-      response: recaptchaToken,
-    });
+    const recaptchaRes: AxiosResponse<{success: boolean, challenge_ts: number, hostname: string, 'error-codes': string[]}> = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${await loadRecaptchaSecret()}&response=${recaptchaToken}`);
   
     if (!recaptchaRes.data.success) {
+      console.error('ReCAPTCHA was not successful.');
+      console.error(recaptchaRes);
+
       callback(null, {
         statusCode: 401,
         headers:    {
           'Content-Type': 'application/json',
         },
         body:       JSON.stringify({
-          msg: `reCAPTCHA failed: ${(recaptchaRes['error-codes'] || []).join(', ')}`,
+          msg: `reCAPTCHA failed: ${(recaptchaRes.data['error-codes'] || []).join(', ')}`,
         }),
       });
 
@@ -105,6 +122,9 @@ exports.submitGuess = async ({ body = '' }: { body: string }, _context: any, cal
       }));
     } catch (err) {
       if (err.code !== 'ConditionalCheckFailedException') {
+        console.error(`Error updating updating guesses for user ${guessor}.`);
+        console.error(guesses);
+
         throw err;
       }
     }
@@ -113,6 +133,9 @@ exports.submitGuess = async ({ body = '' }: { body: string }, _context: any, cal
       statusCode: 204,
     });
   } catch (err) {
+    console.error('Server Error');
+    console.error(err);
+
     callback(null, {
       statusCode: 500,
       headers:    {

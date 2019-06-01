@@ -1,5 +1,5 @@
-resource "aws_iam_role" "dynamo-write-role" {
-  name = "babynames-write"
+resource "aws_iam_role" "submit-guess-role" {
+  name = "babynames-submit-role"
 
   assume_role_policy = <<-EOT
     {
@@ -38,9 +38,54 @@ resource "aws_iam_role" "dynamo-read-role" {
     EOT
 }
 
+resource "aws_iam_role_policy" "ssm-read-policy" {
+  name = "ssm-read-policy"
+  role = "${aws_iam_role.submit-guess-role.id}"
+
+  policy = <<-EOT
+    {
+      "Version":    "2012-10-17",
+      "Statement":  [
+        {
+          "Resource": "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/BabyNames/production/*",
+          "Effect":   "Allow",
+          "Action":   [
+            "ssm:GetParametersByPath",
+            "ssm:GetParameters",
+            "ssm:GetParameter"
+          ]
+        }
+      ]
+    }
+    EOT
+}
+
+resource "aws_iam_role_policy" "log-policy" {
+  name = "CloudWatchLog"
+  role = "${aws_iam_role.submit-guess-role.id}"
+
+  policy = <<-EOT
+    {
+      "Version":    "2012-10-17",
+      "Statement":  [
+        {
+          "Action":   [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          "Effect":   "Allow",
+          "Resource": "arn:aws:logs:*:*:*"
+        }
+      ]
+    }
+    EOT
+}
+
+
 resource "aws_iam_role_policy" "dynamo-write-policy" {
   name = "dynamo-write-policy"
-  role = "${aws_iam_role.dynamo-write-role.id}"
+  role = "${aws_iam_role.submit-guess-role.id}"
 
   policy = <<-EOT
     {

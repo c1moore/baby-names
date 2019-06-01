@@ -5,8 +5,11 @@ resource "aws_lambda_function" "submit-name" {
   runtime   = "nodejs10.x"
   s3_bucket = "${aws_s3_bucket.s3-lambdas.id}"
   s3_key    = "${aws_s3_bucket_object.submit-name.id}"
-  handler   = "exports.submitName"
-  role      = "${aws_iam_role.dynamo-write-role.arn}"
+  handler   = "submit-guess.submitGuess"
+  role      = "${aws_iam_role.submit-guess-role.arn}"
+  timeout   = 30
+
+  source_code_hash = "${filebase64sha256("../build/services/submit-guess.zip")}"
 
   tags = {
     Name        = "submit-name"
@@ -31,8 +34,10 @@ resource "aws_lambda_function" "fetch-guesses" {
   runtime   = "nodejs10.x"
   s3_bucket = "${aws_s3_bucket.s3-lambdas.id}"
   s3_key    = "${aws_s3_bucket_object.fetch-guesses.id}"
-  handler   = "exports.calculateResults"
+  handler   = "list-guesses.calculateResults"
   role      = "${aws_iam_role.dynamo-read-role.arn}"
+
+  source_code_hash = "${filebase64sha256("../build/services/list-guesses.zip")}"
 
   tags = {
     Name        = "fetch-guesses"
@@ -57,8 +62,10 @@ resource "aws_lambda_function" "fetch-user-guesses" {
   runtime   = "nodejs10.x"
   s3_bucket = "${aws_s3_bucket.s3-lambdas.id}"
   s3_key    = "${aws_s3_bucket_object.fetch-user-guesses.id}"
-  handler   = "exports.fetchGuessesByUser"
+  handler   = "list-user-guesses.fetchGuessesByUser"
   role      = "${aws_iam_role.dynamo-read-role.arn}"
+
+  source_code_hash = "${filebase64sha256("../build/services/list-user-guesses.zip")}"
 
   tags = {
     Name        = "fetch-user-guesses"

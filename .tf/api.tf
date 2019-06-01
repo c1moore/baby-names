@@ -43,7 +43,9 @@ resource "aws_api_gateway_integration" "index-html" {
 }
 
 resource "aws_api_gateway_method_response" "index-html-res-200" {
-  depends_on = [aws_api_gateway_integration.index-html]
+  depends_on = [
+    aws_api_gateway_integration.index-html
+  ]
 
   rest_api_id = "${aws_api_gateway_rest_api.baby-names-api.id}"
   resource_id = "${aws_api_gateway_rest_api.baby-names-api.root_resource_id}"
@@ -383,7 +385,7 @@ resource "aws_lambda_permission" "apigateway-submit-guess-permission" {
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.submit-name.function_name}"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.submit-guess-endpoint.http_method}/${aws_api_gateway_resource.api-resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.submit-guess-endpoint.http_method}${aws_api_gateway_resource.api-resource.path}"
 }
 
 /**
@@ -402,14 +404,14 @@ resource "aws_api_gateway_integration" "list-guesses-integration" {
   http_method             = "${aws_api_gateway_method.list-guesses-endpoint.http_method}"
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "${aws_lambda_function.submit-name.invoke_arn}"
+  uri                     = "${aws_lambda_function.fetch-guesses.invoke_arn}"
 }
 
 resource "aws_lambda_permission" "apigateway-list-guesses-permission" {
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.fetch-guesses.function_name}"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.list-guesses-endpoint.http_method}/${aws_api_gateway_resource.api-resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.list-guesses-endpoint.http_method}${aws_api_gateway_resource.api-resource.path}"
 }
 
 /**
@@ -424,7 +426,7 @@ resource "aws_api_gateway_resource" "guessor-api-resource" {
 resource "aws_api_gateway_method" "list-user-guesses-endpoint" {
   rest_api_id   = "${aws_api_gateway_rest_api.baby-names-api.id}"
   resource_id   = "${aws_api_gateway_resource.guessor-api-resource.id}"
-  http_method   = "POST"
+  http_method   = "GET"
   authorization = "NONE"
 }
 
@@ -434,16 +436,29 @@ resource "aws_api_gateway_integration" "list-user-guesses-integration" {
   http_method             = "${aws_api_gateway_method.list-user-guesses-endpoint.http_method}"
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "${aws_lambda_function.submit-name.invoke_arn}"
+  uri                     = "${aws_lambda_function.fetch-user-guesses.invoke_arn}"
 }
 
 resource "aws_lambda_permission" "apigateway-lambda-permission" {
   action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.submit-name.function_name}"
+  function_name = "${aws_lambda_function.fetch-user-guesses.function_name}"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.list-user-guesses-endpoint.http_method}/${aws_api_gateway_resource.guessor-api-resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.baby-names-api.execution_arn}/*/${aws_api_gateway_method.list-user-guesses-endpoint.http_method}${aws_api_gateway_resource.guessor-api-resource.path}"
 }
 
-resource "null_resource" "void" {
-  
+resource "aws_api_gateway_deployment" "prod-deploy" {
+  depends_on = [
+    aws_api_gateway_integration.index-html,
+    aws_api_gateway_integration.main-js,
+    aws_api_gateway_integration.polyfills-js,
+    aws_api_gateway_integration.es2015-polyfills-js,
+    aws_api_gateway_integration.runtime-js,
+    aws_api_gateway_integration.styles-css,
+    aws_api_gateway_integration.submit-guess-integration,
+    aws_api_gateway_integration.list-guesses-integration,
+    aws_api_gateway_integration.list-user-guesses-integration
+  ]
+
+  rest_api_id = "${aws_api_gateway_rest_api.baby-names-api.id}"
+  stage_name  = "prod"
 }
