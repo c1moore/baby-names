@@ -5,6 +5,8 @@ AWS.config.update({
   region: process.env.AWS_REGION,
 });
 
+const CONDITION_CHECK_FAILED_ERR = 'ConditionalCheckFailedException';
+
 function parseRequest(body: string = ''): { recaptchaToken: string, guessor: string, guesses: string[] } {
   const { recaptchaToken, guessor, guesses }: { recaptchaToken: string, guessor: string, guesses: string[] } = JSON.parse(body);
   
@@ -40,29 +42,36 @@ async function addGuess(docClient: AWS.DynamoDB.DocumentClient, guess: string, g
         Guess:                      guess,
       },
       ConditionExpression:        'attribute_exists (Guessors) AND not contains (Guessors, :guessor)',
-      UpdateExpression:           'SET Guessors = list_append (Guessors, :guessor)',
+      UpdateExpression:           'SET Guessors = list_append (Guessors, :guessors)',
       ExpressionAttributeValues:  {
-        ':guessor':                 [ guessor ],
+        ':guessor':                 guessor,
+        ':guessors':                [ guessor ],
       },
       ReturnValues:               'NONE',
     }).promise().then();
   } catch (err) {
-    if (err.code !== 'ConditionalCheckFailedException') {
+    if (err.code !== CONDITION_CHECK_FAILED_ERR) {
       throw err;
     }
 
-    return await docClient.update({
-      TableName:                  process.env.DYNAMO_TABLE_NAME,
-      Key:                        {
-        Guess:                      guess,
-      },
-      ConditionExpression:        'attribute_not_exists (Guessors)',
-      UpdateExpression:           'SET Guessors = :guessor',
-      ExpressionAttributeValues:  {
-        ':guessor':                 [ guessor ],
-      },
-      ReturnValues:               'NONE',
-    }).promise().then();
+    try {
+      return await docClient.update({
+        TableName:                  process.env.DYNAMO_TABLE_NAME,
+        Key:                        {
+          Guess:                      guess,
+        },
+        ConditionExpression:        'attribute_not_exists (Guessors)',
+        UpdateExpression:           'SET Guessors = :guessors',
+        ExpressionAttributeValues:  {
+          ':guessors':                [ guessor ],
+        },
+        ReturnValues:               'NONE',
+      }).promise().then();
+    } catch (err) {
+      if (err.code !== CONDITION_CHECK_FAILED_ERR) {
+        throw err;
+      }
+    }
   }
 };
 
