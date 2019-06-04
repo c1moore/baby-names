@@ -18,23 +18,26 @@
     
     <div class="row justify-content-center" *ngIf="!showGuessorNameInput">
       <h2 class="col-12 prompt">What do you think the baby's name will be?</h2>
-  
-      <mat-form-field *ngFor="let guess of guesses; let i = index" class="col-12 col-sm-10 col-lg-8 col-xl-6">
-        <button mat-button matPrefix class="px-1 no-min-width" (click)="addGuess()">
+    
+      <div class="w-100 justify-content-center text-center" *ngFor="let guess of guesses; let i = index">
+        <mat-form-field class="col-12 col-sm-10 col-lg-8 col-xl-6">
+          <button mat-button matPrefix class="px-1 no-min-width" (click)="addGuess()">
+              <i class="material-icons">
+                add
+              </i>
+          </button>
+    
+          <button mat-button matPrefix class="px-1 mr-3 no-min-width" (click)="removeGuess(i)">
             <i class="material-icons">
-              add
+              close
             </i>
-        </button>
+          </button>
   
-        <button mat-button matPrefix class="px-1 mr-3 no-min-width" (click)="removeGuess(i)">
-          <i class="material-icons">
-            close
-          </i>
-        </button>
-
-        <mat-label>Guess {{i + 1}}</mat-label>
-        <input matInput name="guess-{{i}}" placeholder="{{placeholders[i % placeholders.length]}}" minlength="2" [(ngModel)]="guess.name" />
-      </mat-form-field>
+          <mat-label>Guess {{i + 1}}</mat-label>
+          <input matInput name="guess-{{i}}" placeholder="{{placeholders[i % placeholders.length]}}" minlength="2" [(ngModel)]="guess.name" pattern="^K[A-Za-z]+$" minlength="2" #model="ngModel" />
+          <mat-error *ngIf="model.invalid">Only enter a first name that starts with "K".</mat-error>
+        </mat-form-field>
+      </div>
 
       <div class="w-100"></div>
 

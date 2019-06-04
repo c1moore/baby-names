@@ -23,6 +23,8 @@ const defaultPlaceholders: ReadonlyArray<string> = Object.freeze([
 })
 export class NameFormComponent implements OnInit {
   public readonly guessorRegex: RegExp = /[A-Z][A-Za-z']+ [A-Z][A-Za-z]+/;
+  public readonly guessRegex: RegExp = /^K[A-Za-z]+$/;
+
   public showGuessorNameInput: boolean = true;
 
   public guessor: string;
@@ -75,7 +77,15 @@ export class NameFormComponent implements OnInit {
   }
 
   async submitGuesses(): Promise<void> {
-    this.guesses = this.guesses.filter((guess) => {
+    const isInvalid = this.guesses.some((guess: { name: string }): boolean => {
+      return !this.guessRegex.test(guess.name);
+    });
+
+    if (isInvalid) {
+      return;
+    }
+
+    this.guesses = this.guesses.filter((guess: { name: string }): boolean => {
       return guess.name && (guess.name.length > 1);
     });
 
